@@ -1,0 +1,6 @@
+name: TargetDummies
+version: ${project.version}
+main: com.reygames.targetdummies.TargetDummies
+depend: [PearLib, Slimefun, CS-CoreLib]
+authors: [SquarePear]
+description: A Slimefun addon that adds target dummies
