@@ -8,14 +8,11 @@ import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.SlimefunItem;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.UnregisterReason;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.handlers.BlockTicker;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Zombie;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.util.Vector;
+import org.bukkit.metadata.FixedMetadataValue;
 
 public class TargetDummy extends SlimefunItem {
 
@@ -26,10 +23,8 @@ public class TargetDummy extends SlimefunItem {
             @Override
             public void onPlace(Player player, Block b, SlimefunItem slimefunItem) {
                 BlockStorage.addBlockInfo(b, "owner", player.getUniqueId().toString());
-                BlockStorage.addBlockInfo(b, "whitelist", " ");
 
-                DisplayTarget.updateDisplayTarget(b);
-                // DONT DO ANYTHING - Inventory is not yet loaded
+                DisplayTarget.initEntity(b);
             }
 
             @Override
@@ -63,17 +58,17 @@ public class TargetDummy extends SlimefunItem {
 
             @Override
             public void tick(Block b, SlimefunItem slimefunItem, Config config) {
-                updateTargetDummy(b);
+                Entity entity = DisplayTarget.getEntity(b);
+
+                if (entity == null) {
+                    DisplayTarget.initEntity(b);
+                } else if (!entity.hasMetadata("TargetDummyEntity")) {
+                    entity.setMetadata("TargetDummyEntity", new FixedMetadataValue(TargetDummies.getPlugin(), true));
+                }
             }
         });
 
-        super.register(false);
-    }
-
-    private void updateTargetDummy(Block b) {
-
-
-        DisplayTarget.updateDisplayTarget(b);
+        super.register(slimefun);
     }
 
 }

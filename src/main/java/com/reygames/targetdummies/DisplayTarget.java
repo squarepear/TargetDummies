@@ -1,20 +1,23 @@
 package com.reygames.targetdummies;
 
-import org.bukkit.Server;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Zombie;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
 public class DisplayTarget {
-    public static void updateDisplayTarget(Block b) {
-        Zombie entity = getEntity(b);
+
+    public static Entity initEntity(Block b) {
+        Zombie entity = (Zombie) getEntity(b);
+
         if (entity == null) {
             entity = (Zombie) b.getWorld().spawnEntity(b.getLocation().add(0.5, 0.5, 0.5), EntityType.ZOMBIE);
             entity.setVelocity(new Vector(0, 0, 0));
+            entity.setCustomName("HIT ME");
             entity.setCustomNameVisible(true);
             entity.setGravity(false);
             entity.setAI(false);
@@ -22,35 +25,27 @@ public class DisplayTarget {
             entity.setBaby(false);
             entity.setCanPickupItems(false);
             entity.setMaxHealth(9999999999.0);
-            entity.setMetadata("location", new FixedMetadataValue(TargetDummies.getPlugin(), b.getLocation().toString()));
+
+            entity.getEquipment().setHelmet(new ItemStack(Material.STONE_BUTTON, 1));
+
+            entity.setMetadata("TargetDummyEntity", new FixedMetadataValue(TargetDummies.getPlugin(), true));
         }
 
-        EntityDamageEvent damageEvent = entity.getLastDamageCause();
-
-        if (damageEvent != null) {
-            entity.setCustomName("Damage: " + Math.round(damageEvent.getDamage() * 10)/10);
-        } else {
-            entity.setCustomName("HIT ME");
-        }
-
-        entity.setFireTicks(0);
-        entity.setHealth(entity.getMaxHealth());
+        return entity;
     }
 
     public static void removeEntity(Block b) {
-        for (Entity n : b.getChunk().getEntities()) {
-            if (n instanceof Zombie) {
-                if (b.getLocation().add(0.5, 0.5, 0.5).distanceSquared(n.getLocation()) < 1D && (((Zombie) n).getCustomName().startsWith("Damage: ") || ((Zombie) n).getCustomName().startsWith("HIT ME")) && n.getMetadata("location").equals(b.getLocation().toString()))
-                    n.remove();
-            }
+        Entity entity = getEntity(b);
+        if (entity != null) {
+            getEntity(b).remove();
         }
     }
 
-    private static Zombie getEntity(Block b) {
+    public static Entity getEntity(Block b) {
         for (Entity n : b.getChunk().getEntities()) {
             if (n instanceof Zombie) {
-                if (b.getLocation().add(0.5, 0.5, 0.5).distanceSquared(n.getLocation()) < 1D && (((Zombie) n).getCustomName().startsWith("Damage: ") || ((Zombie) n).getCustomName().startsWith("HIT ME")))
-                    return (Zombie) n;
+                if (b.getLocation().add(0.5, 0.5, 0.5).distanceSquared(n.getLocation()) < 1D && (n.getCustomName().startsWith("Damage: ") || n.getCustomName().startsWith("HIT ME")))
+                    return n;
             }
         }
         return null;
